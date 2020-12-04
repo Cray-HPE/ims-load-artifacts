@@ -1,0 +1,10 @@
+-c constraints-test.txt
+
+# Testing requirements for testing ims_load_artifacts
+fixtures
+mock
+pytest
+pycodestyle
+pylint
+testtools
+responses

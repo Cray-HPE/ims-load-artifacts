@@ -1,0 +1,9 @@
+# Only use Cray-procured packages
+--index-url http://dst.us.cray.com/piprepo/simple
+--trusted-host dst.us.cray.com
+-c constraints.txt
+
+ims-python-helper
+requests
+pyyaml
+boto3

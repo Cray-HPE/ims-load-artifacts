@@ -5,19 +5,21 @@ Cray IMS Load Artifacts Container
 This loads and registers recipes and pre-built image artifacts with IMS.
 """
 
+import json
 import logging
 import os
-
 import sys
 import time
+from string import Template
+
+import botocore.exceptions
 import requests
+import urllib3
 import yaml
 from ims_python_helper import ImsHelper
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
-import botocore.exceptions
 
-import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 LOGGER = logging.getLogger(__name__)
@@ -27,6 +29,22 @@ IMS_URL = os.environ.get('IMS_URL', 'http://cray-ims').strip("/")
 S3_IMS_BUCKET = os.environ.get('S3_IMS_BUCKET', "ims")
 S3_BOOT_IMAGES_BUCKET = os.getenv('S3_BOOT_IMAGES_BUCKET', 'boot-images')
 DOWNLOAD_ROOT = os.getenv('DOWNLOAD_PATH', '/tmp')
+
+BOS_URL = os.environ.get('BOS_URL', 'http://cray-bos').strip("/")
+BOS_SESSION_ENDPOINT = os.environ.get('BOS_SESSION_ENDPOINT', 'v1/sessiontemplate').lstrip("/")
+BOS_KERNEL_PARAMETERS = os.environ.get('BOS_KERNEL_PARAMETERS',
+                                       "console=ttyS0,115200 bad_page=panic crashkernel=340M hugepagelist=2m-2g "
+                                       "intel_iommu=off intel_pstate=disable iommu=pt ip=dhcp "
+                                       "numa_interleave_omit=headless numa_zonelist_order=node oops=panic "
+                                       "pageblock_order=14 pcie_ports=native printk.synchronous=y rd.neednet=1 "
+                                       "rd.retry=10 rd.shell turbo_boost_limit=999 "
+                                       "spire_join_token=${SPIRE_JOIN_TOKEN}")
+BOS_ROOTFS_PROVIDER = os.environ.get('BOS_ROOTFS_PROVIDER', 'cpss3')
+BOS_ROOTFS_PROVIDER_PASSTHROUGH = os.environ.get(
+    'BOS_ROOTFS_PROVIDER_PASSTHROUGH', 'dvs:api-gw-service-nmn.local:300:nmn0')
+BOS_CFS_CONFIGURATION = os.environ.get('BOS_CFS_CONFIGURATION', '')
+BOS_ENABLE_CFS = \
+    'True' if os.environ.get('BOS_ENABLE_CFS', 'False').lower in ['true', 'on', 'yes', 't', '1'] else 'False'
 
 S3_ENDPOINT = None
 S3_SECRET_KEY = None
@@ -72,15 +90,72 @@ def wait_for_istio():
         time.sleep(2)
 
 
-class _ImsLoadArtifacts_v1_0_0():
+class _ImsLoadArtifacts_v1_0_0:
     """
     Load Artifacts Handler for 1.0.0 versioned manifest files
     """
+
+    BOS_SESSION_TEMPLATE = \
+        """
+        as
+        boot_sets:
+          compute:
+            boot_ordinal: 2
+            etag: ${ims_etag}
+            kernel_parameters: ${bos_kernel_parameters}
+            network: nmn
+            node_roles_groups:
+            - Compute
+            path: ${ims_manifest_path}
+            rootfs_provider: ${bos_rootfs_provider}
+            rootfs_provider_passthrough: ${bos_rootfs_provider_passthrough}
+            type: s3
+        cfs:
+          configuration: ${bos_cfs_configuration}
+        enable_cfs: ${bos_enable_cfs}
+        name: ${ims_image_name}
+        """
 
     def __init__(self):
         self.session = requests.session()
         self.retries = Retry(total=10, backoff_factor=2, status_forcelist=[502, 503, 504])
         self.session.mount("http://", HTTPAdapter(max_retries=self.retries))
+
+    def create_bos_session_template(self, ims_etag, ims_manifest_path, ims_image_name):
+        """
+        Generate a BOS Session template for the IMS Image
+        """
+        bos_session_template = ""
+        try:
+            bos_session_template = Template(self.BOS_SESSION_TEMPLATE).substitute({
+                "ims_etag": ims_etag,
+                "ims_manifest_path": ims_manifest_path,
+                "ims_image_name": ims_image_name,
+                'bos_kernel_parameters': BOS_KERNEL_PARAMETERS,
+                'bos_rootfs_provider': BOS_ROOTFS_PROVIDER,
+                'bos_rootfs_provider_passthrough': BOS_ROOTFS_PROVIDER_PASSTHROUGH,
+                'bos_cfs_configuration': BOS_CFS_CONFIGURATION,
+                'bos_enable_cfs': BOS_ENABLE_CFS,
+            })
+            template_yaml = yaml.safe_load(bos_session_template)
+            if not isinstance(template_yaml, dict):
+                LOGGER.error("Session Template must be formatted as a dictionary.")
+                return False
+            body = json.dumps(template_yaml)
+        except yaml.YAMLError as exc:
+            LOGGER.error("BOS Session Template was not proper YAML: %s", exc)
+            LOGGER.debug(bos_session_template)
+            return False
+        except json.decoder.JSONDecodeError as err:
+            LOGGER.error("BOS Session Template was not proper JSON: %s", err)
+            return False
+        try:
+            resp = self.session.post('/'.join([BOS_URL, BOS_SESSION_ENDPOINT]), data=body)
+            resp.raise_for_status()
+        except requests.RequestException as err:
+            LOGGER.error("Problem contacting the Boot Orchestration Service (BOS): %s", err)
+            return False
+        return True
 
     def download_artifact(self, link, md5sum):
         """ download and verify artifact using link reference """
@@ -228,7 +303,17 @@ class _ImsLoadArtifacts_v1_0_0():
             }
 
             try:
-                return ih.image_upload_artifacts(**ih_upload_kwargs)
+                result = ih.image_upload_artifacts(**ih_upload_kwargs)
+                if os.environ.get("CREATE_BOS_SESSION_TEMPLATE", "False").lower() in ['true', 'on', 'yes', 't', '1']:
+                    try:
+                        LOGGER.info('Creating BOS Session Temnplate for image "%s"', image_name)
+                        ims_etag = result["ims_image_record"]["link"]["etag"]
+                        ims_image_path = result["ims_image_record"]["link"]["path"]
+                        self.create_bos_session_template(ims_etag, ims_image_path, image_name)
+                    except KeyError as exc:
+                        LOGGER.error("Error creating BOS Session Template. IMS image result missing variable %s. %s",
+                                     exc, result)
+                return result
             except requests.RequestException as exc:
                 if hasattr(exc, "response"):
                     LOGGER.warning("IMS Service Response is %s", exc.response.text)

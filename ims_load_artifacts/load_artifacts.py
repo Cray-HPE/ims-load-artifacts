@@ -97,7 +97,6 @@ class _ImsLoadArtifacts_v1_0_0:
 
     BOS_SESSION_TEMPLATE = \
         """
-        as
         boot_sets:
           compute:
             boot_ordinal: 2

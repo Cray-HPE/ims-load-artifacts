@@ -5,7 +5,6 @@ Cray IMS Load Artifacts Container
 This loads and registers recipes and pre-built image artifacts with IMS.
 """
 
-import json
 import logging
 import os
 import sys
@@ -120,36 +119,31 @@ class _ImsLoadArtifacts_v1_0_0:
         self.retries = Retry(total=10, backoff_factor=2, status_forcelist=[502, 503, 504])
         self.session.mount("http://", HTTPAdapter(max_retries=self.retries))
 
-    def create_bos_session_template(self, ims_etag, ims_manifest_path, ims_image_name):
+    def create_bos_session_template(self, ims_etag, ims_manifest_path, ims_image_id):
         """
         Generate a BOS Session template for the IMS Image
         """
-        bos_session_template = ""
         try:
             bos_session_template = Template(self.BOS_SESSION_TEMPLATE).substitute({
                 "ims_etag": ims_etag,
                 "ims_manifest_path": ims_manifest_path,
-                "ims_image_name": ims_image_name,
+                "ims_image_name": '"IMS Image Id: {}"'.format(ims_image_id),
                 'bos_kernel_parameters': BOS_KERNEL_PARAMETERS,
                 'bos_rootfs_provider': BOS_ROOTFS_PROVIDER,
                 'bos_rootfs_provider_passthrough': BOS_ROOTFS_PROVIDER_PASSTHROUGH,
                 'bos_cfs_configuration': BOS_CFS_CONFIGURATION,
                 'bos_enable_cfs': BOS_ENABLE_CFS,
             })
-            template_yaml = yaml.safe_load(bos_session_template)
-            if not isinstance(template_yaml, dict):
+            LOGGER.debug(bos_session_template)
+            body = yaml.safe_load(bos_session_template)
+            if not isinstance(body, dict):
                 LOGGER.error("Session Template must be formatted as a dictionary.")
                 return False
-            body = json.dumps(template_yaml)
         except yaml.YAMLError as exc:
             LOGGER.error("BOS Session Template was not proper YAML: %s", exc)
-            LOGGER.debug(bos_session_template)
-            return False
-        except json.decoder.JSONDecodeError as err:
-            LOGGER.error("BOS Session Template was not proper JSON: %s", err)
             return False
         try:
-            resp = self.session.post('/'.join([BOS_URL, BOS_SESSION_ENDPOINT]), data=body)
+            resp = self.session.post('/'.join([BOS_URL, BOS_SESSION_ENDPOINT]), json=body)
             resp.raise_for_status()
         except requests.RequestException as err:
             LOGGER.error("Problem contacting the Boot Orchestration Service (BOS): %s", err)
@@ -308,7 +302,8 @@ class _ImsLoadArtifacts_v1_0_0:
                         LOGGER.info('Creating BOS Session Temnplate for image "%s"', image_name)
                         ims_etag = result["ims_image_record"]["link"]["etag"]
                         ims_image_path = result["ims_image_record"]["link"]["path"]
-                        self.create_bos_session_template(ims_etag, ims_image_path, image_name)
+                        ims_image_id = result["ims_image_record"]["id"]
+                        self.create_bos_session_template(ims_etag, ims_image_path, ims_image_id)
                     except KeyError as exc:
                         LOGGER.error("Error creating BOS Session Template. IMS image result missing variable %s. %s",
                                      exc, result)
@@ -384,7 +379,7 @@ class _ImsLoadArtifacts_v1_0_0:
 
 def load_artifacts():
     """
-    Read a manifest.json file. If the object was not found, log it and return an error..
+    Read a manifest.yaml file. If the object was not found, log it and return an error..
     """
     with open(MANIFEST_FILE) as inf:
         manifest_data = yaml.safe_load(inf)

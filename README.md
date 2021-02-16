@@ -83,6 +83,10 @@ recipes:
     recipe_type: kiwi-ng
 ```
 
+A sample manifest and sample artifacts are included in the repo. NOTE: Each sample artifact was created using
+the command `dd if=/dev/random of=large-file-1mb.txt count=1024 bs=1024`. As such, the artifacts cannot actually be
+used by IMS to build/customize an image.
+
 ## Build the Docker image
 docker build -t dtr.dev.cray.com/cray/cray-ims-load-artifacts .
 
@@ -130,4 +134,4 @@ OK
 
 ## License
 
-Copyright 2019-2020 Hewlett Packard Enterprise Development LP
+Copyright 2019-2021 Hewlett Packard Enterprise Development LP

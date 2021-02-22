@@ -127,7 +127,7 @@ class _ImsLoadArtifacts_v1_0_0:
             bos_session_template = Template(self.BOS_SESSION_TEMPLATE).substitute({
                 "ims_etag": ims_etag,
                 "ims_manifest_path": ims_manifest_path,
-                "ims_image_name": '"IMS Image Id: {}"'.format(ims_image_id),
+                "ims_image_name": '"IMS Id: {}"'.format(ims_image_id),
                 'bos_kernel_parameters': BOS_KERNEL_PARAMETERS,
                 'bos_rootfs_provider': BOS_ROOTFS_PROVIDER,
                 'bos_rootfs_provider_passthrough': BOS_ROOTFS_PROVIDER_PASSTHROUGH,
@@ -139,6 +139,26 @@ class _ImsLoadArtifacts_v1_0_0:
             if not isinstance(body, dict):
                 LOGGER.error("Session Template must be formatted as a dictionary.")
                 return False
+
+            # When loading a dictionary value that is an empty string, yaml will convert the empty string to None.
+            # >> > a = "{ a: { b: "" } }"
+            # >> > yaml.safe_load(a)
+            # {'a': {'b': None}}
+            # This can cause BOS to throw an error. Fix up possible None values.
+
+            body["boot_sets"]["compute"]["kernel_parameters"] = \
+                '' if not body["boot_sets"]["compute"]["kernel_parameters"] \
+                else body["boot_sets"]["compute"]["kernel_parameters"]
+            body["boot_sets"]["compute"]["rootfs_provider"] = \
+                '' if not body["boot_sets"]["compute"]["rootfs_provider"] \
+                else body["boot_sets"]["compute"]["rootfs_provider"]
+            body["boot_sets"]["compute"]["rootfs_provider_passthrough"] = \
+                '' if not body["boot_sets"]["compute"]["rootfs_provider_passthrough"] \
+                else body["boot_sets"]["compute"]["rootfs_provider_passthrough"]
+            body["cfs"]["configuration"] = \
+                '' if not body["cfs"]["configuration"] \
+                else body["cfs"]["configuration"]
+
         except yaml.YAMLError as exc:
             LOGGER.error("BOS Session Template was not proper YAML: %s", exc)
             return False

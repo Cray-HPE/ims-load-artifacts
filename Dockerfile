@@ -1,9 +1,14 @@
 # Dockerfile for ims-load-artifacts container
 # Copyright 2020-2021 Hewlett Packard Enterprise Development LP
 
-FROM dtr.dev.cray.com/baseos/alpine:3.12.0 as base
+FROM arti.dev.cray.com/baseos-docker-master-local/alpine:3.12.6 as base
 COPY requirements.txt constraints.txt /
-RUN apk add --no-cache py3-pip python3 && \
+RUN apk add --no-cache \
+        gcc \
+        python3-dev \
+        libc-dev \
+        py3-pip \
+        python3 && \
     pip3 install --upgrade pip \
         --no-cache-dir \
         --index-url https://arti.dev.cray.com:443/artifactory/api/pypi/pypi-remote/simple && \

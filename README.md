@@ -84,7 +84,7 @@ recipes:
 ```
 
 ## Build the Docker image
-docker build -t dtr.dev.cray.com/cray/cray-ims-load-artifacts .
+docker build -t arti.dev.cray.com/csm-docker-stable-local/cray-ims-load-artifacts:latest .
 
 ## Run the Docker image
 ```bash
@@ -97,7 +97,7 @@ $ docker run --rm \
  -e S3_IMS_BUCKET=ims \
  -e S3_BOOT_IMAGES_BUCKET=boot-images \
  -e LOG_LEVEL=INFO \
- dtr.dev.cray.com/cray/cray-ims-load-artifacts:latest
+ arti.dev.cray.com/csm-docker-stable-local/cray-ims-load-artifacts:latest
 ```
 
 ## Contributing

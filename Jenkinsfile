@@ -1,5 +1,3 @@
-// Copyright 2019-2021 Hewlett Packard Enterprise Development LP
-
 @Library('dst-shared@release/shasta-1.4') _
 
 dockerBuildPipeline {

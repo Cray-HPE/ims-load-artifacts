@@ -21,7 +21,7 @@
 #
 # (MIT License)
 
-FROM arti.dev.cray.com/baseos-docker-master-local/alpine:3.12.6 as base
+FROM arti.dev.cray.com/baseos-docker-master-local/alpine:3.13.5 as base
 COPY requirements.txt constraints.txt /
 RUN apk add --no-cache \
         gcc \

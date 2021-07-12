@@ -223,7 +223,7 @@ class _ImsLoadArtifacts_v1_0_0:
             local_filename = {
                 "http": _download_http_artifact,
                 "file": _download_file_artifact,
-            }.get(link["type"])()
+            }[link["type"]]()
 
             if md5sum:
                 LOGGER.info("Verifying md5sum of the downloaded file.")
@@ -234,7 +234,7 @@ class _ImsLoadArtifacts_v1_0_0:
                 LOGGER.info("Not verifying md5sum of the downloaded file.")
 
             return local_filename
-        except ValueError:
+        except KeyError:
             raise ImsLoadArtifactsDownloadException(
                 "Cannot download artifact due to unsupported or missing link type. {}".format(link)) from ValueError
 
@@ -427,8 +427,8 @@ def load_artifacts():
     try:
         return {
             "1.0.0": _ImsLoadArtifacts_v1_0_0()
-        }.get(manifest_data["version"])(manifest_data)
-    except ValueError:
+        }[manifest_data["version"]](manifest_data)
+    except KeyError:
         raise ImsLoadArtifactsBaseException(
             "Cannot process manifest.yaml due to unsupported or missing manifest version {}".format(manifest_data)) \
             from ValueError

@@ -410,7 +410,7 @@ class _ImsLoadArtifacts_v1_0_0:
         if all([ret_recipes, ret_images]):
             records = dict(ret_recipes, **ret_images)
             LOGGER.info(yaml.dump(records))
-            with open('/results/records.yaml', 'w') as results_file:
+            with open('/results/records.yaml', 'wt', encoding='utf-8') as results_file:
                 yaml.dump(records, results_file)
 
         # Return a boolean of if everything was successful
@@ -421,7 +421,7 @@ def load_artifacts():
     """
     Read a manifest.yaml file. If the object was not found, log it and return an error..
     """
-    with open(MANIFEST_FILE) as inf:
+    with open(MANIFEST_FILE, 'rt', encoding='utf-8') as inf:
         manifest_data = yaml.safe_load(inf)
 
     try:

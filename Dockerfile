@@ -21,14 +21,17 @@
 #
 # (MIT License)
 
-FROM arti.dev.cray.com/baseos-docker-master-local/alpine:3.12.6 as base
+FROM artifactory.algol60.net/docker.io/alpine:3.12 as base
 COPY requirements.txt constraints.txt /
-RUN apk add --no-cache \
+RUN apk add --upgrade --no-cache apk-tools &&  \
+	apk update && \
+	apk add --no-cache \
         gcc \
         python3-dev \
         libc-dev \
         py3-pip \
         python3 && \
+	apk -U upgrade --no-cache && \
     pip3 install --upgrade pip \
         --no-cache-dir \
         --index-url https://arti.dev.cray.com:443/artifactory/api/pypi/pypi-remote/simple && \
@@ -38,7 +41,7 @@ RUN apk add --no-cache \
 # Run unit tests
 FROM base as testing
 COPY requirements-test.txt constraints-test.txt /
-RUN pip install --no-cache-dir -r /requirements-test.txt
+RUN pip3 install --no-cache-dir -r /requirements-test.txt
 RUN mkdir /ims_load_artifacts && mkdir /tests
 COPY ims_load_artifacts /ims_load_artifacts
 COPY tests /tests

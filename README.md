@@ -88,7 +88,7 @@ the command `dd if=/dev/random of=large-file-1mb.txt count=1024 bs=1024`. As suc
 used by IMS to build/customize an image.
 
 ## Build the Docker image
-docker build -t arti.dev.cray.com/csm-docker-stable-local/cray-ims-load-artifacts:latest .
+docker build -t artifactory.algol60.net/csm-docker/stable/cray-ims-load-artifacts:latest .
 
 ## Run the Docker image
 ```bash
@@ -101,7 +101,7 @@ $ docker run --rm \
  -e S3_IMS_BUCKET=ims \
  -e S3_BOOT_IMAGES_BUCKET=boot-images \
  -e LOG_LEVEL=INFO \
- arti.dev.cray.com/csm-docker-stable-local/cray-ims-load-artifacts:latest
+ artifactory.algol60.net/csm-docker/stable/cray-ims-load-artifacts:latest
 ```
 
 ## Contributing

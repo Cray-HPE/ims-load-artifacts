@@ -147,7 +147,7 @@ class _ImsLoadArtifacts_v1_0_0:
             bos_session_template = Template(self.BOS_SESSION_TEMPLATE).substitute({
                 "ims_etag": ims_etag,
                 "ims_manifest_path": ims_manifest_path,
-                "ims_image_name": '"IMS Id: {}"'.format(ims_image_id),
+                "ims_image_name": f'"IMS Id: {ims_image_id}"',
                 'bos_kernel_parameters': BOS_KERNEL_PARAMETERS,
                 'bos_rootfs_provider': BOS_ROOTFS_PROVIDER,
                 'bos_rootfs_provider_passthrough': BOS_ROOTFS_PROVIDER_PASSTHROUGH,
@@ -214,8 +214,8 @@ class _ImsLoadArtifacts_v1_0_0:
             """
             if not os.path.isfile(link["path"]):
                 raise ImsLoadArtifactsFileNotFoundException(
-                    "Failed to find artifact {} in given local container path. Please contact "
-                    "your service person to notify HPE of this error.".format(link["path"])
+                    f'Failed to find artifact {link["path"]} in given local container path. Please contact '
+                    'your service person to notify HPE of this error.'
                 )
             return link["path"]
 
@@ -236,7 +236,7 @@ class _ImsLoadArtifacts_v1_0_0:
             return local_filename
         except KeyError:
             raise ImsLoadArtifactsDownloadException(
-                "Cannot download artifact due to unsupported or missing link type. {}".format(link)) from ValueError
+                f'Cannot download artifact due to unsupported or missing link type. {link}') from KeyError
 
     def load_recipe(self, ih, recipe_name, recipe_data):
         """ call IMS Helper to load recipe into IMS and S3 """
@@ -430,8 +430,8 @@ def load_artifacts():
         }[manifest_data["version"]](manifest_data)
     except KeyError:
         raise ImsLoadArtifactsBaseException(
-            "Cannot process manifest.yaml due to unsupported or missing manifest version {}".format(manifest_data)) \
-            from ValueError
+            f'Cannot process manifest.yaml due to unsupported or missing manifest version {manifest_data}') \
+            from KeyError
 
 
 def main():

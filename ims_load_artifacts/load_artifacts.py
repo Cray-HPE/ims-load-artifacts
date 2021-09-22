@@ -214,8 +214,8 @@ class _ImsLoadArtifacts_v1_0_0:
             """
             if not os.path.isfile(link["path"]):
                 raise ImsLoadArtifactsFileNotFoundException(
-                    f'Failed to find artifact {link["path"]} in given local container path. Please contact '
-                    'your service person to notify HPE of this error.'
+                    f"Failed to find artifact {link['path']} in given local container path. "
+                    "Please contact your service person to notify HPE of this error."
                 )
             return link["path"]
 
@@ -236,7 +236,7 @@ class _ImsLoadArtifacts_v1_0_0:
             return local_filename
         except KeyError:
             raise ImsLoadArtifactsDownloadException(
-                f'Cannot download artifact due to unsupported or missing link type. {link}') from KeyError
+                f"Cannot download artifact due to unsupported or missing link type. {link}") from ValueError
 
     def load_recipe(self, ih, recipe_name, recipe_data):
         """ call IMS Helper to load recipe into IMS and S3 """
@@ -430,8 +430,8 @@ def load_artifacts():
         }[manifest_data["version"]](manifest_data)
     except KeyError:
         raise ImsLoadArtifactsBaseException(
-            f'Cannot process manifest.yaml due to unsupported or missing manifest version {manifest_data}') \
-            from KeyError
+            f"Cannot process manifest.yaml due to unsupported or missing manifest version {manifest_data}") \
+            from ValueError
 
 
 def main():

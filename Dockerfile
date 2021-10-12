@@ -57,7 +57,10 @@ RUN pylint ./ims_load_artifacts
 
 # The final application release product container
 FROM base as application
-RUN mkdir -p /ims_load_artifacts /results
-COPY ims_load_artifacts /ims_load_artifacts
 
+RUN mkdir -p /ims_load_artifacts /results && \
+  chown -R "nobody:nobody" /ims_load_artifacts /results
+
+USER nobody
+COPY ims_load_artifacts /ims_load_artifacts
 ENTRYPOINT ["/ims_load_artifacts/load_artifacts.py"]

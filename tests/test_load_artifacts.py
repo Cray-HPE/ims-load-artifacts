@@ -1,4 +1,7 @@
-# Copyright 2019-2021 Hewlett Packard Enterprise Development LP
+#
+# MIT License
+#
+# (C) Copyright 2019-2022 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -12,13 +15,11 @@
 #
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
 # THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
 # OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
-#
-# (MIT License)
 
 """
 Unit tests for ims_load_artifacts
@@ -139,10 +140,11 @@ class TestLoadArtifacts(testtools.TestCase):
 
         # method call 2, to upload the recipe to S3 and IMS
         self.assertEqual(ih_mock.method_calls[1][0], "().recipe_upload")
-        self.assertEqual(len(ih_mock.method_calls[1][1]), 3)
+        self.assertEqual(len(ih_mock.method_calls[1][1]), 4)
         self.assertEqual(ih_mock.method_calls[1][1][0], "shasta_barebones_recipe-1.2.4")
         self.assertEqual(ih_mock.method_calls[1][1][1], "/tmp/cray-sles15sp1-barebones-1.2.4.tgz")
         self.assertEqual(ih_mock.method_calls[1][1][2], "sles15")
+        self.assertEqual(ih_mock.method_calls[1][1][3], [])
 
         # method call 3, to validate the md5 of the cray-sles15sp1-barebones-1.2.4.sqshfs
         self.assertEqual(ih_mock.method_calls[2][0], "_md5")

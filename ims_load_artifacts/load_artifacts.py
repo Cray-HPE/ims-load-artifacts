@@ -22,6 +22,7 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 #
+
 """
 Cray IMS Load Artifacts Container
 This loads and registers recipes and pre-built image artifacts with IMS.
@@ -30,10 +31,12 @@ This loads and registers recipes and pre-built image artifacts with IMS.
 import logging
 import os
 import sys
+import tempfile
 import time
 from string import Template
 
 import botocore.exceptions
+import jinja2
 import requests
 import urllib3
 import yaml
@@ -46,6 +49,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 LOGGER = logging.getLogger(__name__)
 
 MANIFEST_FILE = os.environ.get("MANIFEST_FILE", "/manifest.yaml")
+TEMPLATE_DICTIONARY = os.environ.get("TEMPLATE_DICTIONARY", "/mnt/image-recipe-import/template_dictionary")
 IMS_URL = os.environ.get('IMS_URL', 'http://cray-ims').strip("/")
 S3_IMS_BUCKET = os.environ.get('S3_IMS_BUCKET', "ims")
 S3_BOOT_IMAGES_BUCKET = os.getenv('S3_BOOT_IMAGES_BUCKET', 'boot-images')
@@ -249,9 +253,10 @@ class _ImsLoadArtifacts_v1_0_0:
             linux_distribution = recipe_data["linux_distribution"]
             link = recipe_data["link"]
             recipe_path = self.download_artifact(link, md5sum)
+            template_dictionary = recipe_data.get("template_dictionary", [])
 
             try:
-                return ih.recipe_upload(recipe_name, recipe_path, linux_distribution)
+                return ih.recipe_upload(recipe_name, recipe_path, linux_distribution, template_dictionary)
             except requests.RequestException as exc:
                 if hasattr(exc, "response"):
                     LOGGER.warning("IMS Service Response is %s", exc.response.text)
@@ -419,21 +424,49 @@ class _ImsLoadArtifacts_v1_0_0:
         return all([ret_recipes, ret_images])
 
 
+def load_template(name):
+    """
+    Prevent malicious attackers from importing sensitive files in the container by
+    only allow jinja2 to read MANIFEST_FILE.
+    """
+    if name == MANIFEST_FILE:
+        with open(MANIFEST_FILE, encoding="utf-8") as inf:
+            return inf.read()
+    return None
+
+
 def load_artifacts():
     """
     Read a manifest.yaml file. If the object was not found, log it and return an error..
     """
-    with open(MANIFEST_FILE, 'rt', encoding='utf-8') as inf:
-        manifest_data = yaml.safe_load(inf)
 
+    manifest_file = MANIFEST_FILE
     try:
-        return {
-            "1.0.0": _ImsLoadArtifacts_v1_0_0()
-        }[manifest_data["version"]](manifest_data)
-    except KeyError:
-        raise ImsLoadArtifactsBaseException(
-            f"Cannot process manifest.yaml due to unsupported or missing manifest version {manifest_data}") \
-            from ValueError
+        if os.path.isfile(TEMPLATE_DICTIONARY):
+            LOGGER.info("Templating manifest.yaml")
+            template_loader = jinja2.FunctionLoader(load_template)
+            template_env = jinja2.Environment(loader=template_loader)
+            template = template_env.get_template(MANIFEST_FILE)
+            with open(TEMPLATE_DICTIONARY, encoding="utf-8") as td, \
+                    tempfile.NamedTemporaryFile("w", delete=False) as outf:
+                outf.write(template.render(**yaml.safe_load(td)))
+                manifest_file = outf.name
+                outf.close()
+
+        with open(manifest_file, 'rt', encoding='utf-8') as inf:
+            manifest_data = yaml.safe_load(inf)
+
+        try:
+            return {
+                "1.0.0": _ImsLoadArtifacts_v1_0_0()
+            }[manifest_data["version"]](manifest_data)
+        except KeyError:
+            raise ImsLoadArtifactsBaseException(
+                f"Cannot process manifest.yaml due to unsupported or missing manifest version {manifest_data}") \
+                from ValueError
+
+    except yaml.YAMLError as exc:
+        raise ImsLoadArtifactsBaseException("Cannot loading manifest.yaml.", exc=exc) from yaml.YAMLError
 
 
 def main():

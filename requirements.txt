@@ -8,3 +8,4 @@ ims-python-helper
 requests
 pyyaml
 boto3
+jinja2

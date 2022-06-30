@@ -21,6 +21,7 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 #
+
 """
 Unit tests for ims_load_artifacts
 """
@@ -140,10 +141,11 @@ class TestLoadArtifacts(testtools.TestCase):
 
         # method call 2, to upload the recipe to S3 and IMS
         self.assertEqual(ih_mock.method_calls[1][0], "().recipe_upload")
-        self.assertEqual(len(ih_mock.method_calls[1][1]), 3)
+        self.assertEqual(len(ih_mock.method_calls[1][1]), 4)
         self.assertEqual(ih_mock.method_calls[1][1][0], "shasta_barebones_recipe-1.2.4")
         self.assertEqual(ih_mock.method_calls[1][1][1], "/tmp/cray-sles15sp1-barebones-1.2.4.tgz")
         self.assertEqual(ih_mock.method_calls[1][1][2], "sles15")
+        self.assertEqual(ih_mock.method_calls[1][1][3], [])
 
         # method call 3, to validate the md5 of the cray-sles15sp1-barebones-1.2.4.sqshfs
         self.assertEqual(ih_mock.method_calls[2][0], "_md5")

@@ -35,8 +35,7 @@ RUN apk add --upgrade --no-cache apk-tools &&  \
         python3 && \
 	apk -U upgrade --no-cache && \
     pip3 install --upgrade pip \
-        --no-cache-dir \
-        --index-url https://arti.dev.cray.com:443/artifactory/api/pypi/pypi-remote/simple && \
+        --no-cache-dir && \
     pip3 install --no-cache-dir -r requirements.txt
 
 # The testing container

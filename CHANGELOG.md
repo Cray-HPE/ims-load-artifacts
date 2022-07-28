@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.0] - 2022-07-28
+### Changed
+- CASMTRIAGE-3756 - added file permission checking and better logging.
+- CASMCMS-7970 - ims update cray.dev.com addresses
+
 ## [1.4.0] - 2022-06-30
 ### Added
 - Add support for loading IMS recipes that have template parameters

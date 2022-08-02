@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.0] - 2022-08-02
+### Changed
+- CASMCMS-7970 - update to new version of ims-python-helper.
+
 ## [1.5.0] - 2022-07-28
 ### Changed
 - CASMTRIAGE-3756 - added file permission checking and better logging.

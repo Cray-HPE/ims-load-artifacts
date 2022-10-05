@@ -98,7 +98,7 @@ def wait_for_istio():
     while True:
         try:
             LOGGER.debug("Calling ims ready endpoint")
-            r = requests.get(ims_ready_endpoint)
+            r = requests.get(ims_ready_endpoint, timeout=10)
             if r.ok:
                 LOGGER.info("Successfully talked to IMS Ready endpoint.")
                 break

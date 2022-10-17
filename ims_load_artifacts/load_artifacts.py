@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright 2019-2021 Hewlett Packard Enterprise Development LP
+# Copyright 2019-2022 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -86,6 +86,12 @@ class ImsLoadArtifactsDownloadException(ImsLoadArtifactsBaseException):
 class ImsLoadArtifactsFileNotFoundException(ImsLoadArtifactsBaseException):
     """
     ImsLoadArtifacts File Not Found Exception
+    """
+
+
+class ImsLoadArtifactsPermissionException(ImsLoadArtifactsBaseException):
+    """
+    ImsLoadArtifacts Incorrect Permissions Exception
     """
 
 
@@ -212,12 +218,24 @@ class _ImsLoadArtifacts_v1_0_0:
             Handle local artifacts that have been baked into the
             ims-load-artifacts container.
             """
-            if not os.path.isfile(link["path"]):
+            filename = link["path"]
+            if not os.path.isfile(filename):
                 raise ImsLoadArtifactsFileNotFoundException(
-                    f"Failed to find artifact {link['path']} in given local container path. "
+                    f"Failed to find artifact {filename} in given local container path. "
                     "Please contact your service person to notify HPE of this error."
                 )
-            return link["path"]
+            if not os.access(filename, os.R_OK):
+                # log file permissions and ownership
+                st = os.stat(filename)
+                LOGGER.info("Accessing local file: %s", filename)
+                LOGGER.info("  File permissions: %s", oct(st.st_mode))
+                LOGGER.info("  File ownership: %d,%d", st.st_uid, st.st_gid)
+                LOGGER.info("  Current userid:grpid - %d:%d", os.getuid(), os.getgid())
+                raise ImsLoadArtifactsPermissionException(
+                    f"Failed to access artifact {filename} due to permission issues."
+                )
+
+            return filename
 
         try:
             local_filename = {
@@ -227,7 +245,10 @@ class _ImsLoadArtifacts_v1_0_0:
 
             if md5sum:
                 LOGGER.info("Verifying md5sum of the downloaded file.")
-                if md5sum != ImsHelper._md5(local_filename):  # pylint: disable=protected-access
+                lf_md5sum = ImsHelper._md5(local_filename)  # pylint: disable=protected-access
+                if md5sum != lf_md5sum:
+                    LOGGER.info("  Input md5    :%s", md5sum)
+                    LOGGER.info("  Download md5 :%s", lf_md5sum)
                     raise ImsLoadArtifactsDownloadException("The calculated md5sum does not match the expected value.")
                 LOGGER.info("Successfully verified the md5sum of the downloaded file.")
             else:
@@ -302,7 +323,7 @@ class _ImsLoadArtifacts_v1_0_0:
 
     def download_image_artifact(self, artifact_data):
         """ Helper function to download image artifact """
-
+        LOGGER.debug('Artifact Data: "%s" ', artifact_data)
         md5 = artifact_data["md5"]
         link = artifact_data["link"]
         mime_type = artifact_data["type"]

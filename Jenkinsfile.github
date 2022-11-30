@@ -15,6 +15,7 @@ pipeline {
         NAME = "cray-ims-load-artifacts"
         DESCRIPTION = "Load prebuilt images and recipes into the cray IMS service"
         IS_STABLE = getBuildIsStable()
+	DOCKER_BUILDKIT = "1"
     }
 
     stages {

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.2] - 2022-12-02
+### Added
+- Authenticate to CSM's artifactory
+
 ## [1.6.1] - 2022-10-05
 ### Changed
 - CASMCMS-8272 - add timeout to request due to pylint failure.

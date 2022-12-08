@@ -39,6 +39,7 @@ import testtools
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')))
 
 from ims_load_artifacts import load_artifacts
+from ims_load_artifacts import loaders
 
 manifest_yaml = """
 ---
@@ -76,7 +77,7 @@ class TestLoadArtifacts(testtools.TestCase):
 
     @responses.activate
     @mock.patch(".".join([load_artifacts.__name__, "yaml.dump"]))
-    @mock.patch(".".join([load_artifacts.__name__, "open"]), new_callable=mock.mock_open, read_data=manifest_yaml)
+    @mock.patch('builtins.open', new_callable=mock.mock_open, read_data=manifest_yaml)
     def test_init(self, mock_open, mock_yaml_dump):
 
         S3_ACCESS_KEY = self.getUniqueString()
@@ -119,7 +120,7 @@ class TestLoadArtifacts(testtools.TestCase):
             'S3_BUCKET', S3_BUCKET))
 
         ih_mock = self.useFixture(fixtures.MockPatchObject(
-            load_artifacts, 'ImsHelper', autospec=True)).mock
+            loaders, 'ImsHelper', autospec=True)).mock
 
         ih_mock._md5.return_value = "f3287b5d1267da964cf30fb5910d3126"
 

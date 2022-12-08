@@ -63,6 +63,7 @@ FROM base as application
 RUN mkdir -p /ims_load_artifacts /results && \
   chown -R "nobody:nobody" /ims_load_artifacts /results
 
+ENV PYTHONPATH="/"
 USER nobody
 COPY ims_load_artifacts /ims_load_artifacts
 ENTRYPOINT ["/ims_load_artifacts/load_artifacts.py"]

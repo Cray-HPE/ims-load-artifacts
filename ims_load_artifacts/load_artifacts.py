@@ -122,8 +122,14 @@ def main() -> int:
     Load artifacts from manifest.yaml into S3 and register with IMS.
     """
 
+    is_in_iuf = bool(os.getenv('IUF'))
     log_level = os.environ.get('LOG_LEVEL', 'WARN')
-    logging.basicConfig(level=log_level)
+    logging_params = {
+        'level': log_level
+    }
+    if is_in_iuf:
+        logging_params['format'] = '%(levelname)s %(message)s'
+    logging.basicConfig(**logging_params)
 
     try:
         # The key names used below match the values defined in the
@@ -143,7 +149,6 @@ def main() -> int:
         sys.exit(1)
 
     try:
-        is_in_iuf = bool(os.getenv('IUF'))
         if is_in_iuf:
             iuf_distribution_root = os.getenv('IUF_RELEASE_PATH', os.getcwd())
             iuf_manifest_path = os.getenv('IUF_MANIFEST_PATH',

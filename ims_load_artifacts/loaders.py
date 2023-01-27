@@ -332,6 +332,9 @@ class ImsLoadArtifacts_v1_0_0:
                 'initrd': initrd,
                 'boot_parameters': boot_parameters
             }
+            if os.getenv('IUF'):
+                # Only skip images with the same name when running in an IUF context.
+                ih_upload_kwargs['skip_existing'] = True
 
             try:
                 result = ih.image_upload_artifacts(**ih_upload_kwargs)

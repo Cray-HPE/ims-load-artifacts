@@ -28,7 +28,8 @@ COPY requirements.txt constraints.txt /
 RUN --mount=type=secret,id=netrc,target=/root/.netrc \
         apk add --upgrade --no-cache apk-tools &&  \
 	apk update && \
-	apk add --no-cache \
+	apk add --update --no-cache \
+        ca-certificates \
         gcc \
         python3-dev \
         libc-dev \
@@ -63,7 +64,11 @@ FROM base as application
 RUN mkdir -p /ims_load_artifacts /results && \
   chown -R "nobody:nobody" /ims_load_artifacts /results
 
+# For update-ca-certificates at runtime
+RUN chown nobody:nobody /etc/ssl/certs
+
 ENV PYTHONPATH="/"
 USER nobody
 COPY ims_load_artifacts /ims_load_artifacts
+ADD argo_entrypoint.sh /ims_load_artifacts
 ENTRYPOINT ["/ims_load_artifacts/load_artifacts.py"]

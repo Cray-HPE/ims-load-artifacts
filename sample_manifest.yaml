@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2021-2022 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2021-2023 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -21,31 +21,43 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 #
---- 
+---
 version: "1.0.0"
-images: 
-  shasta_barebones_image-1.2.4: 
-    artifacts: 
-      - link: 
+images:
+  shasta_barebones_image-1.2.4:
+    arch: "x86_64"
+    artifacts:
+      - link:
           path: sample_image_data/sample.squashfs
           type: file
         md5: 4273cd53ee305c267060680679e21326
         type: application/vnd.cray.image.rootfs.squashfs
-      - link: 
+      - link:
           path: sample_image_data/sample-kernel
           type: file
         md5: 82b10272764c3cb17e0918c1e64a3fa5
         type: application/vnd.cray.image.kernel
-      - link: 
+      - link:
           path: sample_image_data/sample-initrd
           type: file
         md5: 8c5dea6fc5d7143893c2bfa64ba50119
         type: application/vnd.cray.image.initrd
-recipes: 
-  shasta_barebones_recipe-1.2.4: 
-    link: 
+recipes:
+  shasta_barebones_recipe-x86_64-1.2.4:
+    link:
       path: sample_image_data/sample-recipe.tgz
       type: file
     md5: 5a33639a91cd5c28db554019ec6a22ce
     linux_distribution: sles15
     recipe_type: kiwi-ng
+    arch: "x86_64"
+    require_dkms: False
+  shasta_barebones_recipe-aarch64-1.2.4:
+    link:
+      path: sample_image_data/sample-recipe-aarch64.tgz
+      type: file
+    md5: 5a33639a91cd5c28db554019ec6a22ce
+    linux_distribution: sles15
+    recipe_type: kiwi-ng
+    arch: "aarch64"
+    require_dkms: True

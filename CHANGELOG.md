@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [2.5.3] - 2023-06=05
+### Changed
+- CASMCMS-8365 - Add platform information to loader.
+
 ## [2.5.0] - 2023-05-24
 ### Changed
 - Default to creating BOS session templates using BOS v2 instead of BOS v1. Add support for new `BOS_SESSIONTEMPLATES_ENDPOINT`

@@ -1,5 +1,5 @@
 # Only use Cray-procured packages
---extra-index-url https://artifactory.algol60.net/artifactory/csm-python-modules/simple
+--extra-index-url http://artifactory.algol60.net/artifactory/csm-python-modules/unstable
 --trusted-host artifactory.algol60.net
 -c constraints.txt
 

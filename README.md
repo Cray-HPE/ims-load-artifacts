@@ -36,7 +36,7 @@ On a shasta system, the `ims-s3-credentials` secret should be used to populate t
 * `SSL_VALIDATE` -- Whether to validate SSL connections. Currently, this should be set to `False`.
 
 Example:
-```
+```text
 LOG_LEVEL = INFO
 IMS_URL = https://cray-ims
 S3_ENDPOINT = https://rgw-vip.local
@@ -52,7 +52,7 @@ S3_BOOT_IMAGES_BUCKET = boot-images
 The ims-load-artifacts container will look for a file named `manifest.yaml` in the root of the running image. This
 file contains the list of IMS recipes and pre-built images to be uploaded to S3 and added to IMS. 
 
-```
+```yaml
 --- 
 version: "1.0.0"
 images: 
@@ -144,24 +144,6 @@ on github, the cloneCMSMetaTools() function clones the cms-meta-tools repo into 
 For a local build, you will also need to manually write the .version, .docker_version (if this repo
 builds a docker image), and .chart_version (if this repo builds a helm chart) files. When building
 on github, this is done by the setVersionFiles() function.
-
-## Versioning
-The version of this repo is generated dynamically at build time by running the version.py script in 
-cms-meta-tools. The version is included near the very beginning of the github build output. 
-
-In order to make it easier to go from an artifact back to the source code that produced that artifact,
-a text file named gitInfo.txt is added to Docker images built from this repo. For Docker images,
-it can be found in the / folder. This file contains the branch from which it was built and the most
-recent commits to that branch. 
-
-For helm charts, a few annotation metadata fields are appended which contain similar information.
-
-For RPMs, a changelog entry is added with similar information.
-
-## New Release Branches
-When making a new release branch:
-    * Be sure to set the `.x` and `.y` files to the desired major and minor version number for this repo for this release. 
-    * If an `update_external_versions.conf` file exists in this repo, be sure to update that as well, if needed.
 
 ## Copyright and License
 This project is copyrighted by Hewlett Packard Enterprise Development LP and is under the MIT

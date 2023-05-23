@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2018-2022 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2018-2023 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -129,7 +129,7 @@ class ImsLoadArtifacts_v1_0_0:
             bos_session_template = Template(self.BOS_SESSION_TEMPLATE).substitute({
                 "ims_etag": ims_etag,
                 "ims_manifest_path": ims_manifest_path,
-                "ims_image_name": f'"IMS Id: {ims_image_id}"',
+                "ims_image_name": f'"ims-id-{ims_image_id}"',
                 'bos_kernel_parameters': BOS_KERNEL_PARAMETERS,
                 'bos_rootfs_provider': BOS_ROOTFS_PROVIDER,
                 'bos_rootfs_provider_passthrough': BOS_ROOTFS_PROVIDER_PASSTHROUGH,

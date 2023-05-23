@@ -43,7 +43,6 @@ S3_IMS_BUCKET = os.environ.get('S3_IMS_BUCKET', "ims")
 S3_BOOT_IMAGES_BUCKET = os.getenv('S3_BOOT_IMAGES_BUCKET', 'boot-images')
 DOWNLOAD_ROOT = os.getenv('DOWNLOAD_PATH', '/tmp')
 BOS_URL = os.environ.get('BOS_URL', 'http://cray-bos').strip("/")
-BOS_SESSION_ENDPOINT = os.environ.get('BOS_SESSION_ENDPOINT', 'v1/sessiontemplate').lstrip("/")
 BOS_KERNEL_PARAMETERS = os.environ.get('BOS_KERNEL_PARAMETERS',
                                        "console=ttyS0,115200 bad_page=panic crashkernel=340M hugepagelist=2m-2g "
                                        "intel_iommu=off intel_pstate=disable iommu=pt ip=dhcp "
@@ -62,6 +61,28 @@ S3_ENDPOINT = None
 S3_SECRET_KEY = None
 S3_ACCESS_KEY = None
 S3_SSL_VERIFY = None
+
+
+# Determine whether to use BOS v1 or v2:
+# If BOS_SESSIONTEMPLATES_ENDPOINT is set, BOS version is v2. Otherwise,
+# If BOS_SESSION_ENDPOINT is set, BOS version is v1.
+
+if "BOS_SESSIONTEMPLATES_ENDPOINT" in os.environ:
+    BOS_SESSIONTEMPLATES_ENDPOINT = os.environ["BOS_SESSIONTEMPLATES_ENDPOINT"]
+    LOGGER.debug(f"BOS_SESSIONTEMPLATES_ENDPOINT environment variable = '%s'", BOS_SESSIONTEMPLATES_ENDPOINT)
+    BOS_VERSION=2
+elif "BOS_SESSION_ENDPOINT" in os.environ:    
+    BOS_SESSIONTEMPLATES_ENDPOINT = os.environ["BOS_SESSION_ENDPOINT"]
+    LOGGER.debug(f"BOS_SESSIONTEMPLATES_ENDPOINT environment variable not set. BOS_SESSION_ENDPOINT = '%s'", BOS_SESSIONTEMPLATES_ENDPOINT)
+    BOS_VERSION=1
+else:
+    # Defaulting to BOS v2
+    BOS_SESSIONTEMPLATES_ENDPOINT = "v2/sessiontemplates"
+    BOS_VERSION=2
+    LOGGER.debug(f"Neither environment variable set: BOS_SESSIONTEMPLATES_ENDPOINT, BOS_SESSION_ENDPOINT. Using BOS v2 defaults.")
+
+# Strip leading / if needed
+BOS_SESSIONTEMPLATES_ENDPOINT = BOS_SESSIONTEMPLATES_ENDPOINT.lstrip("/")
 
 
 class ImsLoadArtifactsBaseException(Exception):
@@ -93,7 +114,7 @@ class ImsLoadArtifacts_v1_0_0:
     Load Artifacts Handler for 1.0.0 versioned manifest files
     """
 
-    BOS_SESSION_TEMPLATE = \
+    BOS_V1_SESSION_TEMPLATE = \
         """
         boot_sets:
           compute:
@@ -113,6 +134,23 @@ class ImsLoadArtifacts_v1_0_0:
         name: ${ims_image_name}
         """
 
+    BOS_V2_SESSION_TEMPLATE = \
+        """
+        boot_sets:
+          compute:
+            etag: ${ims_etag}
+            kernel_parameters: ${bos_kernel_parameters}
+            node_roles_groups:
+            - Compute
+            path: ${ims_manifest_path}
+            rootfs_provider: ${bos_rootfs_provider}
+            rootfs_provider_passthrough: ${bos_rootfs_provider_passthrough}
+            type: s3
+        cfs:
+          configuration: ${bos_cfs_configuration}
+        enable_cfs: ${bos_enable_cfs}
+        """
+
     def __init__(self):
         self.session = requests.session()
         auth_token = os.getenv('AUTH_TOKEN')
@@ -123,19 +161,26 @@ class ImsLoadArtifacts_v1_0_0:
 
     def create_bos_session_template(self, ims_etag, ims_manifest_path, ims_image_id):
         """
-        Generate a BOS Session template for the IMS Image
+        Generate a BOS v2 Session template for the IMS Image
         """
+        session_template_name = f"ims-id-{ims_image_id}"
+        template_substitutions = {
+            "ims_etag": ims_etag,
+            "ims_manifest_path": ims_manifest_path,
+            'bos_kernel_parameters': BOS_KERNEL_PARAMETERS,
+            'bos_rootfs_provider': BOS_ROOTFS_PROVIDER,
+            'bos_rootfs_provider_passthrough': BOS_ROOTFS_PROVIDER_PASSTHROUGH,
+            'bos_cfs_configuration': BOS_CFS_CONFIGURATION,
+            'bos_enable_cfs': BOS_ENABLE_CFS,
+        }
         try:
-            bos_session_template = Template(self.BOS_SESSION_TEMPLATE).substitute({
-                "ims_etag": ims_etag,
-                "ims_manifest_path": ims_manifest_path,
-                "ims_image_name": f'"ims-id-{ims_image_id}"',
-                'bos_kernel_parameters': BOS_KERNEL_PARAMETERS,
-                'bos_rootfs_provider': BOS_ROOTFS_PROVIDER,
-                'bos_rootfs_provider_passthrough': BOS_ROOTFS_PROVIDER_PASSTHROUGH,
-                'bos_cfs_configuration': BOS_CFS_CONFIGURATION,
-                'bos_enable_cfs': BOS_ENABLE_CFS,
-            })
+            if BOS_VERSION == 1:
+                # In BOS v1, the session template name is specified in the request body
+                template_substitutions["ims_image_name"] = session_template_name
+                bos_session_template = Template(self.BOS_V1_SESSION_TEMPLATE).substitute(template_substitutions)
+            else:
+                bos_session_template = Template(self.BOS_V2_SESSION_TEMPLATE).substitute(template_substitutions)
+
             LOGGER.debug(bos_session_template)
             body = yaml.safe_load(bos_session_template)
             if not isinstance(body, dict):
@@ -165,7 +210,10 @@ class ImsLoadArtifacts_v1_0_0:
             LOGGER.error("BOS Session Template was not proper YAML: %s", exc)
             return False
         try:
-            resp = self.session.post('/'.join([BOS_URL, BOS_SESSION_ENDPOINT]), json=body)
+            if BOS_VERSION == 1:
+                resp = self.session.post('/'.join([BOS_URL, BOS_SESSIONTEMPLATES_ENDPOINT]), json=body)
+            else:
+                resp = self.session.put('/'.join([BOS_URL, BOS_SESSIONTEMPLATES_ENDPOINT, session_template_name]), json=body)
             resp.raise_for_status()
         except requests.RequestException as err:
             LOGGER.error("Problem contacting the Boot Orchestration Service (BOS): %s", err)

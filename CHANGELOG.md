@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [2.5.0] - 2023-05-24
+### Changed
+- Default to creating BOS session templates using BOS v2 instead of BOS v1. Add support for new `BOS_SESSIONTEMPLATES_ENDPOINT`
+  environment variable, reflecting corresponding change in the [`cray-import-kiwi-recipe-image`](https://github.com/Cray-HPE/cray-import-kiwi-recipe-image)
+  repository.
+
 ## [2.4.0] - 2023-05-23
 ### Changed
 - BOS session templates that are created now follow BOS's stated (but currently unenforced)

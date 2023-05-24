@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+### Changed
+- Default to creating BOS session templates using BOS v2 instead of BOS v1. Add support for new `BOS_SESSIONTEMPLATES_ENDPOINT`
+  environment variable, reflecting corresponding change in the [`cray-import-kiwi-recipe-image`](https://github.com/Cray-HPE/cray-import-kiwi-recipe-image)
+  repository.
 
 ## [2.4.0] - 2023-05-23
 ### Changed

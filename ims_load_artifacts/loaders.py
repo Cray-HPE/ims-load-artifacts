@@ -79,7 +79,7 @@ else:
     # Defaulting to BOS v2
     BOS_SESSIONTEMPLATES_ENDPOINT = "v2/sessiontemplates"
     BOS_VERSION=2
-    LOGGER.debug(f"Neither environment variable set: BOS_SESSIONTEMPLATES_ENDPOINT, BOS_SESSION_ENDPOINT. Using BOS v2 defaults.")
+    LOGGER.debug(f"Neither environment variable set: BOS_SESSIONTEMPLATES_ENDPOINT, BOS_SESSION_ENDPOINT. Using BOS v2 defaults")
 
 # Strip leading / if needed
 BOS_SESSIONTEMPLATES_ENDPOINT = BOS_SESSIONTEMPLATES_ENDPOINT.lstrip("/")
@@ -184,7 +184,7 @@ class ImsLoadArtifacts_v1_0_0:
             LOGGER.debug(bos_session_template)
             body = yaml.safe_load(bos_session_template)
             if not isinstance(body, dict):
-                LOGGER.error("Session Template must be formatted as a dictionary.")
+                LOGGER.error("Session Template must be formatted as a dictionary")
                 return False
 
             # When loading a dictionary value that is an empty string, yaml will convert the empty string to None.
@@ -268,15 +268,15 @@ class ImsLoadArtifacts_v1_0_0:
             }[link["type"]]()
 
             if md5sum:
-                LOGGER.info("Verifying md5sum of the downloaded file.")
+                LOGGER.debug("Verifying md5sum of the %s file",str(local_filename))
                 lf_md5sum = ImsHelper._md5(local_filename)  # pylint: disable=protected-access
                 if md5sum != lf_md5sum:
-                    LOGGER.info("  Input md5    :%s", md5sum)
-                    LOGGER.info("  Download md5 :%s", lf_md5sum)
-                    raise ImsLoadArtifactsDownloadException("The calculated md5sum does not match the expected value.")
-                LOGGER.info("Successfully verified the md5sum of the downloaded file.")
+                    LOGGER.debug("  Input md5    :%s", md5sum)
+                    LOGGER.debug("  Download md5 :%s", lf_md5sum)
+                    raise ImsLoadArtifactsDownloadException("The calculated md5sum does not match the expected value")
+                LOGGER.info("Successfully verified the md5sum of the %s file",str(local_filename))
             else:
-                LOGGER.info("Not verifying md5sum of the downloaded file.")
+                LOGGER.debug("Not verifying md5sum of the %s file",str(local_filename))
 
             return local_filename
         except KeyError:

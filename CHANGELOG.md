@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- CASM-4232: Enhanced logging for loaders.py for use with IUF.
+- CASM-4232: Enhanced logging for [`loaders.py`](ims_load_artifacts/loaders.py) for use with IUF.
 
 ## [2.5.0] - 2023-05-24
 ### Changed

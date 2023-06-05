@@ -8,6 +8,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Dependencies
 - Bump `PyYAML` from 5.4.1 to 6.0.1 to avoid build issue caused by https://github.com/yaml/pyyaml/issues/601
+- CASMCMS-8656: Use `update_external_version` to get latest `ims-python-helper` version.
+
+## [2.5.2] - 2023-06-05
+### Changed
+- CASM-4232: Require at least version 2.14.0 of `ims-python-helper` in order to get associated logging enhancements.
+
+## [2.5.1] - 2023-05-31
+### Changed
+- CASM-4232: Enhanced logging for [`loaders.py`](ims_load_artifacts/loaders.py) for use with IUF.
+
+## [2.5.0] - 2023-05-24
+### Changed
+- Default to creating BOS session templates using BOS v2 instead of BOS v1. Add support for new `BOS_SESSIONTEMPLATES_ENDPOINT`
+  environment variable, reflecting corresponding change in the [`cray-import-kiwi-recipe-image`](https://github.com/Cray-HPE/cray-import-kiwi-recipe-image)
+  repository.
+
+## [2.4.0] - 2023-05-23
+### Changed
+- BOS session templates that are created now follow BOS's stated (but currently unenforced)
+  restrictions on template names.
+  
+### Removed
+- Removed defunct files leftover from previous versioning system
+>>>>>>> e3213ac (CASMCMS-8656: Use update_external_version to get latest ims-python-helper Python module)
 
 ## [2.3.0] - 2023-04-18
 ### Changed

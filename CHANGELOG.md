@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 ### Dependencies
 - Bump `PyYAML` from 5.4.1 to 6.0.1 to avoid build issue caused by https://github.com/yaml/pyyaml/issues/601
+- CASMCMS-8656: Use `update_external_version` to get latest `ims-python-helper` version.
 
 ## [2.5.3] - 2023-06-05
 ### Changed

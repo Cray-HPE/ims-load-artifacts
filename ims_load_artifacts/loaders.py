@@ -112,7 +112,9 @@ class ImsLoadArtifactsPermissionException(ImsLoadArtifactsBaseException):
 
 class ImsLoadArtifacts_v1_0_0:
     """
-    Load Artifacts Handler for 1.0.0 versioned manifest files
+    Load Artifacts Handler for 1.0.0 and 1.1.0 versioned manifest files.
+    The 'arch' and 'require_dkms' fields are added as optional data, so
+    the same loader can handle both versions.
     """
 
     BOS_V1_SESSION_TEMPLATE = \
@@ -295,6 +297,8 @@ class ImsLoadArtifacts_v1_0_0:
             link = recipe_data["link"]
             recipe_path = self.download_artifact(link, md5sum)
             template_dictionary = recipe_data.get("template_dictionary", [])
+            
+            # added in v1.1.0, but default values provided if this is a 1.0.0 version
             arch = recipe_data.get("arch", "x86_64")
             require_dkms = recipe_data.get("require_dkms", False)
 
@@ -388,7 +392,8 @@ class ImsLoadArtifacts_v1_0_0:
                 # Only skip images with the same name when running in an IUF context.
                 ih_upload_kwargs['skip_existing'] = True
 
-            # if the image data contains plaform information use it, otherwise use defaults
+            # Added in 1.1.0 manifest version.
+            # If the image data contains plaform information use it, otherwise use default.
             if 'arch' in image_data:
                 ih_upload_kwargs['arch'] = image_data['arch']
 

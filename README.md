@@ -52,11 +52,18 @@ S3_BOOT_IMAGES_BUCKET = boot-images
 The ims-load-artifacts container will look for a file named `manifest.yaml` in the root of the running image. This
 file contains the list of IMS recipes and pre-built images to be uploaded to S3 and added to IMS. 
 
+Each image and recipe may have an optional 'arch' value that can be either 'x86_64' or 'aarch64' to designate the
+architecture of the image. If this field is not present, it will default to be 'x86_64' during the import.
+
+Each recipe may have an optional 'require_dkms' boolean value that may be set to indicate if the recipe requires
+dkms to be enabled for the build to succeed. If this value is not present it will default to False during the import.
+
 ```yaml
 --- 
 version: "1.0.0"
 images: 
-  shasta_barebones_image-1.2.4: 
+  shasta_barebones_image-1.2.4:
+    arch: x86_64
     artifacts: 
       - link: 
           path: http://localhost:8081/repository/shasta-boot-artifacts/cray-sles15sp1-barebones-1.2.4.sqshfs
@@ -81,6 +88,8 @@ recipes:
     md5: f3287b5d1267da964cf30fb5910d3126
     linux_distribution: sles15
     recipe_type: kiwi-ng
+    arch: x86_64
+    require_dkms: False
 ```
 
 A sample manifest and sample artifacts are included in the repo. NOTE: Each sample artifact was created using

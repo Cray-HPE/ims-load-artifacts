@@ -106,7 +106,8 @@ def load_artifacts():
 
         try:
             return {
-                "1.0.0": ImsLoadArtifacts_v1_0_0()
+                "1.0.0": ImsLoadArtifacts_v1_0_0(),
+                "1.1.0": ImsLoadArtifacts_v1_0_0()
             }[manifest_data["version"]](manifest_data)
         except KeyError:
             raise ImsLoadArtifactsBaseException(

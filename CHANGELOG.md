@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [2.6.0] - 2023-06-13
+### Changed
+- CASMCMS-8656: Use `update_external_version` to get latest `ims-python-helper` version.
+- Pin ims-python-helper to 2.14.z.
+
 ## [2.5.3] - 2023-06-05
 ### Changed
 - CASMCMS-8365 - Add platform information to loader.

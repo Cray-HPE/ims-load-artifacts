@@ -60,7 +60,7 @@ dkms to be enabled for the build to succeed. If this value is not present it wil
 
 ```yaml
 --- 
-version: "1.0.0"
+version: "1.1.0"
 images: 
   shasta_barebones_image-1.2.4:
     arch: x86_64

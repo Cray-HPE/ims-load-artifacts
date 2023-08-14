@@ -85,7 +85,6 @@ else:
 # Strip leading / if needed
 BOS_SESSIONTEMPLATES_ENDPOINT = BOS_SESSIONTEMPLATES_ENDPOINT.lstrip("/")
 
-
 class ImsLoadArtifactsBaseException(Exception):
     """
     Toplevel ImsLoadArtifacts Exception
@@ -168,6 +167,7 @@ class ImsLoadArtifacts_v1_0_0:
         """
         session_template_name = f"ims-id-{ims_image_id}"
         template_substitutions = {
+            "ims_image_id": ims_image_id,
             "ims_etag": ims_etag,
             "ims_manifest_path": ims_manifest_path,
             'bos_kernel_parameters': BOS_KERNEL_PARAMETERS,
@@ -177,6 +177,11 @@ class ImsLoadArtifacts_v1_0_0:
             'bos_enable_cfs': BOS_ENABLE_CFS,
         }
         try:
+            # let the user templatize the boot parameters
+            bos_kernel_parameters = Template(BOS_KERNEL_PARAMETERS).safe_substitute(template_substitutions)
+            template_substitutions["bos_kernel_parameters"] = bos_kernel_parameters
+            LOGGER.debug(f"Templatized bos_kernel_parameters:{bos_kernel_parameters}")
+
             if BOS_VERSION == 1:
                 # In BOS v1, the session template name is specified in the request body
                 template_substitutions["ims_image_name"] = session_template_name
@@ -214,8 +219,10 @@ class ImsLoadArtifacts_v1_0_0:
             return False
         try:
             if BOS_VERSION == 1:
+                LOGGER.info("Creating bos v1 session template")
                 resp = self.session.post('/'.join([BOS_URL, BOS_SESSIONTEMPLATES_ENDPOINT]), json=body)
             else:
+                LOGGER.info("Creating bos v2 session template")
                 resp = self.session.put('/'.join([BOS_URL, BOS_SESSIONTEMPLATES_ENDPOINT, session_template_name]), json=body)
             resp.raise_for_status()
         except requests.RequestException as err:

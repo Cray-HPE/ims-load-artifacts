@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.7.1] - 2024-04-10
+### Dependencies
+- Bump `ims-python-helper` from `2.14` to `3.0`
+
 ## [2.7.0] - 2023-08-14
 ### Changed
 - CASMCMS-8743 - templatize the BOS kernel parameters.

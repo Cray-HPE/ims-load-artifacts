@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.7.2] - 2024-07-25
 ### Dependencies
 - Resolve CVE by bumping `certifi` from 2019.11.28 to 2023.7.22
 

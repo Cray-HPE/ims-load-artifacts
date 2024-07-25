@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Dependencies
+- Resolve CVE by bumping `certifi` from 2019.11.28 to 2023.7.22
+
 ## [2.7.1] - 2024-04-10
 ### Dependencies
 - Bump `ims-python-helper` from `2.14` to `3.0`

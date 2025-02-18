@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.8.0] - 2025-02-13
+### Dependencies
+- CASMCMS-9282: Bump Alpine version from 3.15 to 3.18, because 3.15 no longer receives security patches
+
 ## [2.7.2] - 2024-07-25
 ### Dependencies
 - Resolve CVE by bumping `certifi` from 2019.11.28 to 2023.7.22

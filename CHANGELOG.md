@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Dependencies
+- CASMCMS-9510: Updated ims-python-helper version to 3.3.x
+
 ## [2.9.0] - 2025-06-17
 ### Dependencies
 - CASMCMS-8022:  update python modules
